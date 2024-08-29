@@ -12,19 +12,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import site.gun.emotion_calendar.user.domain.CustomUserDetails;
 import site.gun.emotion_calendar.user.dto.LoginRequestDto;
-import site.gun.emotion_calendar.user.util.JwtTokenUtil;
+import site.gun.emotion_calendar.user.exception.LogoutException;
+import site.gun.emotion_calendar.user.service.AuthService;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class LoginController {
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto) {
+        log.info("Login request: {}", loginRequestDto);
         Authentication authentication =
-                new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+                new UsernamePasswordAuthenticationToken(loginRequestDto.email(), loginRequestDto.password());
         try {
             authentication = authenticationManager.authenticate(authentication);
         } catch (BadCredentialsException e) {
@@ -38,18 +40,20 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("관리자 승인 진행 중 입니다.");
         }
 
-        String token = jwtTokenUtil.generateToken((CustomUserDetails) authentication.getPrincipal());
+        String token = authService.generateToken((CustomUserDetails) authentication.getPrincipal());
         log.info("Login token : {}", token);
         return ResponseEntity.ok(token);
     }
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody String token) {
         log.info("Logout Token : {}", token);
-        if (jwtTokenUtil.invalidateToken(token)) {
-            log.info("토큰 무효화 성공");
+        try {
+            authService.logout(token);
             return ResponseEntity.ok("로그아웃 성공");
+        } catch (LogoutException e) {
+            log.warn("토큰 무효화 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃 실패: " + e.getMessage());
         }
-        log.info("토큰 무효화 실패 (이미 무효 또는 유효하지 않은 토큰)");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그아웃 실패");
     }
 }
