@@ -1,6 +1,7 @@
 package site.gun.emotion_calendar.user.service;
 
 
+import site.gun.emotion_calendar.user.dto.EmailCheckDto;
 import site.gun.emotion_calendar.user.dto.RegisterRequestDto;
 
 public interface UserService {
@@ -10,5 +11,5 @@ public interface UserService {
 //    void modify(UserDetailDto userModifyDto);
 //
 //    void delete(long userId);
-    boolean emailDuplicateCheck(String email);
+    boolean emailDuplicateCheck(EmailCheckDto email);
 }

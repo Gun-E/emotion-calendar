@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import site.gun.emotion_calendar.entity.User;
+import site.gun.emotion_calendar.user.dto.EmailCheckDto;
 import site.gun.emotion_calendar.user.dto.RegisterRequestDto;
 import site.gun.emotion_calendar.user.exception.UserAlreadyExist;
 import site.gun.emotion_calendar.user.repository.UserRepository;
@@ -55,8 +56,8 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public boolean emailDuplicateCheck(String email) {
-        return userRepository.existsUserByEmailLike(email);
+    public boolean emailDuplicateCheck(EmailCheckDto email) {
+        return userRepository.existsUserByEmailLike(email.email());
     }
 
 }
